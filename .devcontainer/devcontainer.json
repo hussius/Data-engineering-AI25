@@ -18,7 +18,7 @@
       "minikube": "none"
     }
   },
-  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.bashrc",
+  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.bashrc && $HOME/.local/bin/uv pip install --system duckdb pandas",
   "postStartCommand": "bash -lc 'echo \"--- Environment check ---\"; python3 --version; uv --version; docker --version; az --version | head -n 1; kubectl version --client; echo \"-------------------------\"'",
   "customizations": {
     "vscode": {
@@ -30,6 +30,18 @@
         "ms-vscode.azure-account",
         "mhutchie.git-graph"
       ]
+    },
+    "codespaces": {
+      "repositories": {
+        "ithogskolan-aim25/team1": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team2": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team3": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team4": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team5": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team6": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team7": { "permissions": { "contents": "write" } },
+        "ithogskolan-aim25/team8": { "permissions": { "contents": "write" } }
+      }
     }
   },
   "forwardPorts": [
