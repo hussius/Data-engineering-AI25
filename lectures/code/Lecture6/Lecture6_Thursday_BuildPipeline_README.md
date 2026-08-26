@@ -37,19 +37,20 @@ Four things will change:
 2. **Two sources instead of one** (neither needs an API key).
 3. **No `docker-compose.yml`.** There's no local `db` to orchestrate, so it's
    one container: `docker run --env-file .env`.
-4. **The timestamps work in different wyas**. See Task 2.
+4. **The timestamps work differently.** See Task 2.
 
-Everything else: the FastAPI, the `Dockerfile`, postgres is code you already have.
+Everything else — the FastAPI shape, the `Dockerfile`, the postgres connection code -
+is code you already have.
 
 ## Core tasks (do all four)
 
 
 ### 1. Extend the Week 2 ingestion service
 
-You don't need start from a blank file. Copy `ingestion/` from the Week 2 pipeline
+Don't start from a blank file. Copy `ingestion/` from the Week 2 pipeline
 exercise linked above — just that subfolder (`Dockerfile`, `ingestion.py`,
 `requirements.txt`) — into today's work, and modify it. That's a working
-FastAPI service already. Today's job is pointing it at two new sources and a
+FastAPI service. Today's job is pointing it at two new sources and a
 new database, not building the shape from scratch.
 
 Drop `docker-compose.yml` and the `db` and `adminer` services it starts —
@@ -58,22 +59,38 @@ you're writing straight to your own Neon/Supabase now — and replace the old
 from the starter repo's `.env.example`. That's the same connection string you
 already used for Wednesday's DuckDB self-study.
 
+**Where this code lives.** Everything you write today goes in your team repo.
+The Week 2 repo is somewhere to copy `ingestion/` *out of*, not somewhere to
+work *in*:
+
+```
+team1/                    <- your team repo, from the starter template
+|-- pyproject.toml
+|-- db/schema.sql
+|-- model/train.py
+|-- data/
+`-- ingestion/            <- new today
+    |-- ingestion.py
+    |-- Dockerfile
+    `-- requirements.txt
+```
+
 Then point the endpoints at two new places:
 
 - **SMHI observations** (`opendata-download-metobs.smhi.se`), same API you
-  used in Week 1, now for your team's chosen station:
+  used in Week 1, now for your team's assigned station:
 
   ```
   https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/{param}/station/{station}/period/latest-day/data.json
   ```
 
-  `period/latest-day` is the choice today because it
-  returns a small, recent, JSON. The other ones are unnecessarily large for
+  `period/latest-day` is the choice today because it returns a small, recent
+  window of JSON. The other ones are unnecessarily large for
   this task but you will have the chance to use them later.
 
   This API is designed to only return data for one parameter (for example
   temperature), not a whole JSON bundle as with Weather API. So you need
-  as many calls per station the parameters you want to get. Today we will fetch
+  as many calls per station as there are parameters you want. Today we will fetch
   parameters 1 and 4, air temperature and wind speed, because those are used in
   the pre-provided training code. 
 
@@ -94,6 +111,7 @@ Both are free and key-free — nothing to register today.
 works fine when you run it directly:
 
 ```bash
+cd ingestion          # uv walks up to find pyproject.toml, so this is fine
 uv run uvicorn ingestion:app --reload --port 8000
 # then, in another terminal or browser:
 curl "http://localhost:8000/ingestion/electricity?area=SE3&date=2026-08-25"
@@ -119,10 +137,12 @@ from psycopg2.extras import Json
 conn = psycopg2.connect(os.environ["DATABASE_URL"])
 ```
 
-If `DATABASE_URL` is unset, `psycopg2.connect()` looks for a local Postgres
-on a Unix socket instead. An error mentioning `/var/run/postgresql/.s.PGSQL.5432` always means "the variable wasn't set", never "the database is down".
+If `DATABASE_URL` is unset, `psycopg2.connect()` does not fail loudly — it
+quietly looks for a local Postgres on a Unix socket instead. An error
+mentioning `/var/run/postgresql/.s.PGSQL.5432` always means "the variable
+wasn't set", never "the database is down".
 
-#### The simple case: elpris, one row
+#### The simple case — elpris, one row
 
 One request, one row. The whole response array goes into `data` untouched;
 the silver layer decides later how to unpack it.
@@ -145,7 +165,7 @@ finally:
 
 Two things there apply to every insert you write today:
 
-- **`%s` for every value, always** — never f-strings.
+- **`%s` for every value, always** — never an f-string, whatever the type.
   psycopg2 does the quoting. Watch the trailing comma in a one-value tuple
   `(area,)`; without it you get a confusing *"not all arguments converted"*.
 - **`Json(payload)`** wraps a Python dict or list so it lands in a `jsonb`
@@ -215,8 +235,12 @@ Note:
   looping over `PARAMETERS` — two requests, two `parameter` values, same
   table. Write one call and move on, and you'll have temperature but no wind,
   and won't find out until the feature join comes up empty next week.
-- **Convert the timestamp before inserting.** `observed_at` is given in milliseconds
-so we need to divide by 1000 and use `tz=timezone.utc` to make sure UTC is used.
+- **Convert the timestamp before inserting.** SMHI's `date` field is epoch
+  *milliseconds* in UTC, so divide by 1000 and pass `tz=timezone.utc`. The
+  `observed_at` column is `TIMESTAMPTZ`, which stores an absolute instant —
+  insert a naive datetime instead and Postgres assumes the server's timezone,
+  your weather lands an hour or two away from the prices it belongs to,
+  nothing errors, and the model just gets quietly worse.
 
 
 #### Check it landed
@@ -236,6 +260,7 @@ service to orchestrate alongside it. It's one container now, talking
 straight out to your cloud Postgres:
 
 ```bash
+cd ingestion          # same folder as above; the Dockerfile is here
 docker build -t ingestion .
 docker run --env-file .env -p 8000:8000 ingestion
 ```
@@ -266,9 +291,9 @@ what you just inserted:
 ```sql
 ATTACH 'postgresql://user:pass@host/dbname?sslmode=require' AS pg (TYPE postgres);
 
-SELECT count(*) FROM pg.raw_weather;
-SELECT count(*) FROM pg.raw_elpris;
-SELECT * FROM pg.raw_weather ORDER BY ingestion_timestamp DESC LIMIT 5;
+SELECT count(*) FROM pg.raw__weather;
+SELECT count(*) FROM pg.raw__elpris;
+SELECT * FROM pg.raw__weather ORDER BY ingestion_timestamp DESC LIMIT 5;
 ```
 
 Confirm both tables have rows from your team's own station and area — not
@@ -277,7 +302,7 @@ someone else's.
 
 ## Afternoon: finish the Sprint 1 backlog and project plan
 
-After lunch (13:00) continue working on the above if not finished
+After lunch (13:00) continue working on the above if not finished.
 The last 25 minutes of the day go back to your GitHub
 Projects board from Tuesday's planning workshop. **This is due Friday 28/8**
 — see `Fri_28_8_selfstudy.md` if you need to finish it outside class time.
