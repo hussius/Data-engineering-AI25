@@ -64,6 +64,10 @@ the provider's table browser.
 
 ### 3. Attach it from DuckDB
 
+NOTE: It seems you may have to remove "&channel_binding=require" from the end of your
+connection string. You will also have to install DuckDB and possibly numpy.
+You can do this with pip install or uv add (after uv init).
+
 This is the exact pattern from Tuesday's demo, now against your own database
 instead of the instructor's. From a Python shell, a `.py` script, or
 DuckDB's CLI, inside your Codespace:
