@@ -1,4 +1,4 @@
-# Friday Self-Study: Finish the Sprint 1 Backlog and Project Plan
+# Friday Self-Study: Finish the Sprint 1 Backlog and Definition of Done
 
 Between Thursday's pipeline build and next Tuesday, when Week 4 opens.
 
@@ -28,13 +28,11 @@ Not invented example cards — your team's real next three weeks. At minimum,
 your backlog should include the work Thursday's session didn't finish:
 
 - Validate raw data before insert (rimlighetskontroller, saknade värden,
-  dubbletter — Component A explicitly requires this, and today's pipeline
-  almost certainly doesn't do it yet).
-- Schedule the feature pipeline to run daily, unattended (Component A: "utan
-  att någon startar den manuellt").
+  dubbletter)
+- Schedule the feature pipeline to run daily.
 - Design and build your features table — what a feature *row* looks like for
-  your team's target, joining weather and price data in time.
-- Start the training pipeline (Component B): read features from Postgres,
+  your team's target, joining weather and price data.
+- Start the training pipeline: read features from Postgres,
   retrain `train.py`'s model, register a version.
 
 Move cards to the columns that reflect where things actually stand — some of
@@ -50,8 +48,8 @@ not just demoing the system.
 
 Your team's Sprint 1 backlog and Definition of Done, visible on your GitHub
 Projects board, plus a short project plan document (a few paragraphs is
-enough — decomposition, sequencing, scoping, as covered in Week 2's agile
-intro) committed to your repo. Due today, 28/8.
+enough) that describes how you want to break down the problem and in which order
+you want to do things,committed to your repo. Due today, 28/8.
 
 ## We'll follow up
 
