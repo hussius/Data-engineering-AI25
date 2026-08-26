@@ -51,7 +51,8 @@ Run it against your new database. Any of these work:
   no copy-paste. Simplest option if `psql` is available in your Codespace.
 - Neon's or Supabase's built-in SQL editor in the browser. There's no
   "upload a file" button here — open `db/schema.sql` in your editor, select
-  all, copy, and paste the whole thing into the SQL editor's text box, then
+  all, copy, and paste the whole thing into the SQL editor's text box, replacing the
+  contents that were already there. Then
   click **Run**. That's genuinely it; the editor just executes whatever text
   is pasted in, same as if you'd typed it.
 - A GUI client (TablePlus, DBeaver, Postico) if you already use one — these
